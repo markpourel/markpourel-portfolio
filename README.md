@@ -42,3 +42,9 @@ e2e/              Playwright (этап 3)
 Этап 2: Dockerfile (3 стадии, non-root), `.dockerignore`, `/api/health` для Docker и платформы, compose для резервного VPS. Дизайн, контент, CI и деплой — следующие этапы.
 
 Перед изменением кода читать `AGENTS.md`: версия Next.js содержит расхождения с распространёнными примерами, актуальная документация — в `node_modules/next/dist/docs/`.
+
+## ��������
+
+CI (.github/workflows/ci.yml) �� ������ PR � push � main: ESLint, 
+ext typegen + 	sc --noEmit, production build, Playwright (
+pm run test:e2e) � docker build. ������ �� GitHub Actions ��� � ������ ������� �� Timeweb.
