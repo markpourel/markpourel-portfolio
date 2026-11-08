@@ -40,7 +40,9 @@ npm run build
 npm run test:e2e
 ```
 
-**Защита `main`.** Требуемые проверки — `Code Quality & Tests` и `Docker Build`. На GitHub Free для приватного репозитория недоступны ни rulesets, ни классическая branch protection (API отвечает 403 «Upgrade to GitHub Pro or make this repository public»). Пока тариф не изменён, действует PR-only дисциплина: в `main` не пушить напрямую, мержить только зелёные PR.
+**Защита `main`.** Ruleset `main protection` (id 26818152): запрет удаления ветки, запрет force-push, изменения только через PR, обязательные проверки `Code Quality & Tests` и `Docker Build`, обязательное разрешение обсуждений. Репозиторий публичный: на GitHub Free защита ветки доступна только для публичных репозиториев. Проверено реальными действиями — прямой push отклоняется (`GH013 ... Changes must be made through a pull request`), PR с красными проверками не мержится, зелёный PR мержится.
+
+Правило действует и для администратора репозитория (`current_user_can_bypass: never`).
 
 ## Timeweb Cloud
 
