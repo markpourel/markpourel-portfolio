@@ -1,0 +1,45 @@
+# Зависимости и артефакты сборки устанавливаются внутри образа.
+node_modules
+.next
+out
+build
+coverage
+
+# Git и служебные файлы не нужны в контексте.
+.git
+.gitignore
+.gitattributes
+.github
+.editorconfig
+.vscode
+.idea
+*.tsbuildinfo
+
+# Секреты и локальная конфигурация: в образ не попадают.
+.env
+.env.*
+!.env.example
+
+# Локальная память агента, базы и артефакты тестов.
+memory
+.agent
+playwright-report
+test-results
+*.sqlite
+*.sqlite-journal
+e2e
+
+# Локальные логи и отчёты не нужны в контексте.
+*.log
+
+# Документация и заметки не нужны для сборки (см. план, §6 п. 10).
+docs
+infra
+scripts
+skills
+README.md
+*.md
+
+# OS-мусор.
+.DS_Store
+Thumbs.db

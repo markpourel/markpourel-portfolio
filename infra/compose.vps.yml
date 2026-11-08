@@ -1,0 +1,36 @@
+# Резервный контур: шведский VPS (Docker + Caddy, внешняя сеть `web`).
+# На этапе 2 файл только фиксирует конфигурацию — ничего не разворачивать.
+# Имя сети и схему проксирования подтвердить на VPS перед этапом 11.
+
+name: portfolio
+
+services:
+  portfolio:
+    image: ${PORTFOLIO_IMAGE:-portfolio:latest}
+    container_name: portfolio
+    restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      # Вшивается в клиент на сборке; здесь — для серверных метаданных.
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://markpourel.ru}
+      GIT_SHA: ${GIT_SHA:-dev}
+
+    expose:
+      - "3000"
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
