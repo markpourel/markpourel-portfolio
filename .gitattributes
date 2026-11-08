@@ -1,0 +1,14 @@
+# Единые переводы строк: LF в репозитории и на checkout (Windows/Linux).
+* text=auto eol=lf
+
+# Бинарные файлы не конвертируем.
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
