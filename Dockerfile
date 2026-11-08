@@ -16,8 +16,12 @@ RUN npm ci \
 FROM node:22-alpine AS builder
 WORKDIR /app
 
+# ARG нужен, чтобы CI мог передать коммит: без него --build-arg молча игнорируется.
+ARG GIT_SHA=dev
+
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV GIT_SHA=$GIT_SHA
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -28,10 +32,13 @@ RUN npm run build
 FROM node:22-alpine AS runner
 WORKDIR /app
 
+ARG GIT_SHA=dev
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+ENV GIT_SHA=$GIT_SHA
 
 RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 --ingroup nodejs nextjs
