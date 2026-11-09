@@ -13,7 +13,7 @@ export default function Home() {
         {siteConfig.description}
       </p>
       <p className="text-sm text-neutral-500">
-        Каркас этапа 1. Контент и дизайн появятся на этапах 5–6.
+        Smoke-деплой этапа 4 прошёл.
       </p>
     </main>
   );
