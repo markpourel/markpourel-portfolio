@@ -10,7 +10,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "playwright test"
+    "memory": "node scripts/memory.mjs",
+    "test:e2e": "playwright test",
+    "test:memory": "node --test scripts/memory.test.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
