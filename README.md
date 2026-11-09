@@ -28,9 +28,9 @@ src/
   app/            маршруты, layout, globals.css, not-found
   components/     ui / layout / sections
   content/        контент портфолио (MDX, этап 5)
-  lib/            site.ts, env.ts и общая логика
+  lib/            site.ts, env.ts; content.ts и profile.ts — этапы 5–6
 public/           fonts, images, icons, og
-docs/             adr, runbook
+docs/             adr, runbook, design-spec.md (этап 6)
 infra/            конфигурация деплоя (этап 2)
 scripts/          вспомогательные скрипты (этап 10)
 skills/           инструкции для агентов (этап 10)
@@ -39,12 +39,22 @@ e2e/              Playwright (этап 3)
 
 ## Состояние
 
-Этап 2: Dockerfile (3 стадии, non-root), `.dockerignore`, `/api/health` для Docker и платформы, compose для резервного VPS. Дизайн, контент, CI и деплой — следующие этапы.
+Этапы 1–4 закрыты: каркас, Docker, CI и защита `main`, автодеплой на Timeweb. Следующий — этап 5 (контент-модель: Zod-схема, MDX-парсер, 2–3 реальных кейса, черновики). Страницы, дизайн-токены и форма — этапы 6–7.
+
+## Дизайн и вёрстка (этап 6)
+
+- Дизайн делает владелец: макет (Figma или кадры 1440/360) переносится 1:1. Агент не выбирает направление, цвета, шрифты и композицию.
+- Значения макета снимаются в `docs/design-spec.md` (только текст, без файлов макета). Конфликты с доступностью, схемой контента или лицензией шрифта фиксируются там же, решение — за владельцем.
+- Шрифты — self-host через `next/font/local`, без `next/font/google`: сборка в Docker не должна зависеть от внешней сети.
+- Исходники макета (`design/`) и платные шрифты без веб-лицензии в публичный репозиторий не коммитятся; коммитятся только производственные ассеты.
+- Пока не пройден приём материалов (Gate A), код вёрстки не пишется.
+
+## Память агента
+
+Локальная база `.agent/memory.sqlite` (в `.gitignore`, в образ не попадает) + `scripts/memory.mjs`: сессии, решения, задачи и артефакты с полнотекстовым поиском. Проекция в Obsidian — `Sessions/` и `Decisions/`; архитектурные решения — `docs/adr/`. Протокол для агента: `AGENTS.md` → «Память проекта», скилл `skills/session-close/`. Тесты: `npm run test:memory`.
+
+## Проверки
+
+CI (`.github/workflows/ci.yml`) на каждый PR и push в `main`: ESLint, `next typegen` + `tsc --noEmit`, production build, Playwright (`npm run test:e2e`) и `docker build`. Деплоя из GitHub Actions нет — деплой остаётся за Timeweb.
 
 Перед изменением кода читать `AGENTS.md`: версия Next.js содержит расхождения с распространёнными примерами, актуальная документация — в `node_modules/next/dist/docs/`.
-
-## ��������
-
-CI (.github/workflows/ci.yml) �� ������ PR � push � main: ESLint, 
-ext typegen + 	sc --noEmit, production build, Playwright (
-pm run test:e2e) � docker build. ������ �� GitHub Actions ��� � ������ ������� �� Timeweb.
