@@ -43,6 +43,17 @@ test("robots.txt разрешает индексацию и не заявляе�
   expect(body).not.toContain("Sitemap:");
 });
 
+test("на мобильной ширине нет горизонтальной прокрутки", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
 test("health отвечает 200 и status ok", async ({ request }) => {
   const response = await request.get("/api/health");
 
