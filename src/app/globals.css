@@ -1,9 +1,39 @@
 @import "tailwindcss";
 
 /*
- * Базовый слой этапа 1. Дизайн-токены, тёмная тема и типографика
- * определяются на этапе 6, здесь — только минимальный reset.
+ * Шрифт макета — Lebowski by Pragmatica (pragmatica.design). В макете
+ * используются два начертания: Medium (заголовок) и Semi Bold (мелкий текст).
+ * Лицензия лежит рядом с файлами: public/fonts/lebowski/LICENSE.rtf.
+ */
+@font-face {
+  font-family: "Lebowski by Pragmatica";
+  src: url("/fonts/lebowski/medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Lebowski by Pragmatica";
+  src: url("/fonts/lebowski/semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+ * Дизайн-токены hero-экрана (Frame 28 / Frame 15). Геометрия и типографика
+ * живут в hero.module.css рядом со своими медиазапросами; здесь — только
+ * значения, которые переиспользуются или читаются из TSX.
  */
 :root {
   color-scheme: light;
+
+  --font-lebowski: "Lebowski by Pragmatica", ui-sans-serif, system-ui,
+    sans-serif;
+
+  --hero-bg: #a5a5a5;
+  --hero-fg: #ffffff;
+  --hero-cta-bg: #ffffff;
+  --hero-cta-fg: rgb(7 7 7 / 60%);
 }

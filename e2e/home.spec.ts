@@ -7,16 +7,32 @@ test("главная страница отдаёт 200", async ({ page }) => {
 
   expect(response?.status()).toBe(200);
   await expect(
-    page.getByRole("heading", { level: 1, name: "Mark Pourel" }),
+    page.getByRole("heading", { level: 1, name: "Дизайнер" }),
   ).toBeVisible();
 });
 
-test("временная страница показывает подтверждённый контакт", async ({ page }) => {
+test("hero показывает макет владельца и ведёт в Telegram", async ({ page }) => {
   await page.goto("/");
 
-  const telegram = page.getByRole("link", { name: /Telegram @markpourel/ });
+  // Тексты первого экрана — из макета (Frame 28 / Frame 15).
+  await expect(
+    page.getByText(
+      "CGI, 3D render, digital illustration, airbrushed skin, plastic texture",
+    ),
+  ).toBeVisible();
+  await expect(page.getByText(/Проектирую и создаю, 2026\./)).toBeVisible();
+
+  const telegram = page.getByRole("link", { name: "Написать" });
   await expect(telegram).toBeVisible();
   await expect(telegram).toHaveAttribute("href", "https://t.me/markpourel");
+
+  // Портрет — оригинальный ассет макета, а не CSS-заглушка.
+  const portrait = page.locator(".hero__portrait img");
+  await expect(portrait).toHaveAttribute(
+    "src",
+    "/images/hero/portrait-desktop.png",
+  );
+  await expect(page.getByRole("button", { name: "Меню" })).toBeVisible();
 });
 
 test("canonical и og:url указывают на домен этапа 4Б", async ({ page }) => {

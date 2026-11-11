@@ -30,6 +30,24 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ru" className="h-full antialiased">
       <body className="flex min-h-full flex-col bg-white text-neutral-900">
+        {/*
+          Шрифт hero грузится параллельно документу: без preload браузер
+          узнаёт о файле только из CSS и показывает подмену начертания.
+        */}
+        <link
+          rel="preload"
+          href="/fonts/lebowski/medium.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/lebowski/semibold.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         {children}
       </body>
     </html>
