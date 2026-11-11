@@ -43,6 +43,18 @@ test("robots.txt разрешает индексацию и не заявляе�
   expect(body).not.toContain("Sitemap:");
 });
 
+test("www перенаправляется на основной адрес кодом 301", async ({ request }) => {
+  const response = await request.get("/some/path", {
+    headers: { host: "www.markpourel.ru" },
+    maxRedirects: 0,
+  });
+
+  expect(response.status()).toBe(301);
+  expect(response.headers()["location"]).toBe(
+    "https://markpourel.ru/some/path",
+  );
+});
+
 test("на мобильной ширине нет горизонтальной прокрутки", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
