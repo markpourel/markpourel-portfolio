@@ -117,30 +117,30 @@ curl.exe -s https://markpourel.ru | findstr /i "canonical og:url"
 
 **Токен Timeweb.** API-токен и MCP-сервер (`https://api.timeweb.cloud/api/v1/mcp/search`) дают доступ к инфраструктуре аккаунта; в Git и vault токен не попадает, локально лежит вне репозитория. MCP умеет читать приложения и запускать деплой, но не привязывает домены — это делается REST-запросом `PATCH /api/v1/apps/<id>/domains` со списком FQDN.
 
-## Staging и публикация изменения (этап 4В)
+## Публикация изменения
 
-**Что это.** Второе приложение App Platform из того же репозитория и Dockerfile, ветка `staging`, домен `staging.markpourel.ru`. Прод остаётся на `main` (защищён, только PR).
-**Заполняется на этапе 4В:** id второго приложения, тариф и стоимость, переменные окружения (имена), дата проверки.
+**Решение 2026-11-11:** отдельного staging нет. Владелец отказался от второго платного приложения (510 ₽/мес): все правки идут сразу в `main`, без лишних действий. Причина, альтернативы и принятые риски — `docs/adr/0002-no-staging.md`.
 
-**Защита.** Basic Auth включается только если в env staging-приложения задан `STAGING_BASIC_AUTH`; логин и пароль лежат только в env Timeweb. Тот же флаг включает `X-Robots-Tag: noindex, nofollow` и `Disallow: /` в `robots.txt`. Без переменной staging работает как обычное приложение.
+**Процесс:**
 
-**Исключение из пароля.** Путь `/api/health` открыт без авторизации — иначе платформа не пройдёт health-проверку и деплой staging упадёт. Путь health в панели по-прежнему пустой (используется `HEALTHCHECK` из Dockerfile).
+1. Работа в ветке от `main` (`feature/…`, `docs/…`, `chore/…`).
+2. Локальный прогон того же, что делает CI: `npm run lint`, `npx next typegen && npx tsc --noEmit`, `npm run build`, `npm run test:e2e`.
+3. PR в `main` → CI (`Code Quality & Tests`, `Docker Build`) → merge.
+4. Merge сразу публикуется автодеплоем — проверить прод.
 
-**Процесс публикации изменения:**
-
-1. Работа в ветке, как раньше.
-2. `git push origin <ветка>:staging --force` → дождаться деплоя staging → проверить (с паролем: `curl.exe -u <логин>:<пароль> https://staging.markpourel.ru/`).
-3. PR в `main` → CI → merge → автодеплой на прод.
-4. Проверить прод. Откат — revert PR.
-
-**Проверки staging:**
+**Проверка прода после деплоя:**
 
 ```powershell
-curl.exe -I https://staging.markpourel.ru/                          # без пароля: 401
-curl.exe -I -u <логин>:<пароль> https://staging.markpourel.ru/      # 200 + X-Robots-Tag: noindex, nofollow
-curl.exe -I https://staging.markpourel.ru/api/health                # 200 без пароля
-curl.exe -s https://staging.markpourel.ru/robots.txt                # Disallow: /
+curl.exe -I https://markpourel.ru
+curl.exe -s https://markpourel.ru/api/health
+curl.exe -s https://markpourel.ru/robots.txt
 ```
+
+**Правило.** Merge в `main` публикует сразу, поэтому PR обязан оставлять прод рабочим: недоделанные страницы не публикуются и не получают ссылок (постраничный Gate — этап 6), черновики контента остаются вне сборки.
+
+**Откат.** Revert-PR (проверено на #11/#12) либо ручной деплой предыдущего коммита: `POST /api/v1/apps/285001/deploy` с `commit_sha`.
+
+**Если staging понадобится снова.** Готовый код защиты (Basic Auth в `src/proxy.ts`, `noindex`, `Disallow: /` в `robots.ts`, e2e) лежит в ветке `feature/stage-4v-staging` и в `main` не влит; включается одной переменной `STAGING_BASIC_AUTH` в env второго приложения. Ветку можно влить отдельным PR.
 
 ## Память агента (этап 10)
 
