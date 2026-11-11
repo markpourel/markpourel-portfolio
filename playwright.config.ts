@@ -14,6 +14,8 @@ export default defineConfig({
     ["html", { open: "never", outputFolder: "playwright-report" }],
   ],
   outputDir: "test-results",
+  // Песочница отдельным приложением: её файлы не собираются в chromium.
+  testIgnore: ["lab/**"],
   use: {
     baseURL,
     trace: "retain-on-failure",

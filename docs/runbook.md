@@ -1,5 +1,77 @@
 # Runbook
 
+## Локальная проверка
+
+Порядок проверки страницы целиком — от быстрой итерации к прод-подобной
+сборке. Прод-сборку прогоняем **перед PR**, не после merge: merge сразу
+публикуется автодеплоем (ADR 0002).
+
+### 1. Дев-сервер сайта
+
+```powershell
+npm ci
+npm run dev
+# http://localhost:3000
+```
+
+Порт 3000. Дев-сервер не воспроизводит прод: другой порт, другая сборка,
+Turbopack без standalone-оптимизаций.
+
+### 2. Песочница `lab/` (проверка библиотек и экспериментов)
+
+Отдельное приложение, порт 3100, свои зависимости и lock-файл.
+Корневые `package.json` и `package-lock.json` не меняются.
+
+```powershell
+cd lab
+npm ci
+npm run dev
+# http://localhost:3100
+```
+
+Как добавить эксперимент и правило переноса на сайт — `lab/README.md`.
+Песочница не входит в Docker-образ, CI сайта и Dependabot; проверяется
+отдельным job `Lab Sandbox`, который запускается только когда PR задел `lab/`.
+
+### 3. Прод-подобная сборка в Docker
+
+```powershell
+docker build -t portfolio:local .
+docker run -d --name portfolio-local -p 3000:3000 `
+  -e NEXT_PUBLIC_SITE_URL=http://localhost:3000 portfolio:local
+curl.exe -s http://localhost:3000/api/health
+docker logs portfolio-local
+docker stop portfolio-local; docker rm portfolio-local
+```
+
+Health должен вернуть 200. Подробности сборки — § «Docker» выше,
+особенности контейнера на платформе — § «Timeweb Cloud».
+
+> [!warning] Ловушки платформы
+> Две известные ловушки вынесены в § «Timeweb Cloud» и не дублируются:
+> `localhost` внутри контейнера резолвится в `::1` (лечится `HOSTNAME=::`),
+> а путь health в панели должен оставаться пустым. Локальный `docker run`
+> с `-p 3000:3000` от `HOSTNAME=0.0.0.0` из Dockerfile работает; если
+> контейнер поднимается с `HOSTNAME=::` как на платформе, проверять health
+> по `127.0.0.1`, а не по `localhost`.
+
+### 4. Порядок перед PR
+
+1. Дев-сервер (`npm run dev`) — посмотреть страницу, состояние, адаптив.
+2. Песочница (`cd lab && npm run dev`) — если PR трогает `lab/`.
+3. Прод-подобная сборка: `docker build` + `docker run` + health 200.
+4. Те же проверки, что в CI: `npm run lint`, `npx next typegen && npx tsc --noEmit`,
+   `npm run build`, `npm run test:e2e`.
+5. PR → CI → merge → автодеплой → проверка прода (§ «Публикация изменения»).
+
+### Предлагаемые npm-скрипты корня (не добавлены, нужно решение владельца)
+
+| Скрипт | Команда | Зачем |
+| --- | --- | --- |
+| `dev:lab` | `npm --prefix lab run dev` | запуск песочницы из корня без `cd lab` |
+| `docker:local` | `docker build -t portfolio:local .` | короткая прод-подобная сборка |
+| `check` | `npm run lint && npx next typegen && npx tsc --noEmit` | проверки CI одной командой |
+
 ## Локальная разработка
 
 ```bash

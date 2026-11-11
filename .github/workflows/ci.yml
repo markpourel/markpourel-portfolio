@@ -71,5 +71,69 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Check lab is excluded from the build context
+        run: |
+          set -euo pipefail
+          if grep -qxF '/lab' .dockerignore; then
+            echo "OK: .dockerignore excludes /lab"
+          else
+            echo "::error::.dockerignore must contain an exact '/lab' line (slashed, root-only)"
+            exit 1
+          fi
+          git ls-files --error-unmatch lab/package.json > /dev/null
+          echo "OK: lab/package.json is tracked"
+
       - name: Build image
         run: docker build --build-arg GIT_SHA=${{ github.sha }} -t portfolio:ci .
+
+  lab:
+    name: Lab Sandbox
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Песочница — отдельное приложение: корневые quality и docker её не видят.
+    # Этот job запускается, только если изменения затронули lab/.
+    if: ${{ github.event_name == 'pull_request' }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Detect lab changes
+        id: changes
+        run: |
+          set -euo pipefail
+          base="origin/${{ github.base_ref }}"
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          if git diff --quiet "$base"...HEAD -- lab/ ; then
+            echo "lab не затронут — проверки песочницы пропускаются"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "lab затронут — проверки песочницы запускаются"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v7
+        if: steps.changes.outputs.skip == 'false'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: lab/package-lock.json
+
+      - name: Install dependencies
+        if: steps.changes.outputs.skip == 'false'
+        working-directory: lab
+        run: npm ci
+
+      - name: Lint
+        if: steps.changes.outputs.skip == 'false'
+        working-directory: lab
+        run: npm run lint
+
+      - name: Type check
+        if: steps.changes.outputs.skip == 'false'
+        working-directory: lab
+        run: npm run typecheck
+
+      - name: Build
+        if: steps.changes.outputs.skip == 'false'
+        working-directory: lab
+        run: npm run build

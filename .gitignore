@@ -54,3 +54,8 @@ Thumbs.db
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# песочница lab: свои зависимости и сборка, в Git идёт только код
+/lab/node_modules
+/lab/.next
+/lab/.local
