@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Песочница — отдельное приложение со своим ESLint (lab/eslint.config.mjs).
+    "lab/**",
   ]),
 ]);
 
